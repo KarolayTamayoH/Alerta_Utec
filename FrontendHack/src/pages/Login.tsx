@@ -238,7 +238,6 @@ export default function Login() {
                       <option value="estudiante">Estudiante</option>
                       <option value="autoridad">Autoridad/Personal</option>
                       <option value="administrativo">Administrativo</option>
-                      <option value="seguridad">Seguridad</option>
                     </select>
                   </div>
                 </div>

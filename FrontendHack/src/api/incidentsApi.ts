@@ -3,6 +3,7 @@ const API_URL = import.meta.env.VITE_API_BASE_URL || "https://tu-api-url.com/dev
 interface IncidenteBackend {
   incidenteId: string;
   tipo: string;
+  area: string;
   descripcion: string;
   ubicacion: string;
   urgencia: string;
@@ -20,6 +21,7 @@ export async function crearIncidente(data: {
   descripcion: string;
   ubicacion: string;
   urgencia: string;
+  area?: string;
 }) {
   try {
     const token = localStorage.getItem("token");
@@ -116,6 +118,7 @@ export async function actualizarEstado(id: string, nuevoEstado: string) {
 export function mapIncidenteToFrontend(inc: IncidenteBackend): {
   id: string;
   type: 'medical' | 'security' | 'infrastructure' | 'other';
+  area: string;
   title: string;
   description: string;
   location: string;
@@ -124,20 +127,24 @@ export function mapIncidenteToFrontend(inc: IncidenteBackend): {
   timestamp: string;
   email: string;
 } {
-  // Mapear tipo
-  const tipoMap: Record<string, string> = {
-    'emergencia_medica': 'medical',
+  // Mapear área del backend al tipo del frontend
+  const areaMap: Record<string, string> = {
     'seguridad': 'security',
+    'enfermeria': 'medical',
     'infraestructura': 'infrastructure',
-    'otro': 'other'
+    'limpieza': 'infrastructure',
+    'tecnologia': 'infrastructure',
+    'mantenimiento': 'infrastructure',
+    'general': 'other'
   };
 
   // Mapear estado
   const estadoMap: Record<string, string> = {
     'pendiente': 'pending',
     'en_atencion': 'in_progress',
+    'en_progreso': 'in_progress',
     'resuelto': 'resolved',
-    'cancelado': 'resolved'
+    'cancelado': 'cancelled'
   };
 
   // Mapear urgencia
@@ -150,11 +157,12 @@ export function mapIncidenteToFrontend(inc: IncidenteBackend): {
 
   return {
     id: inc.incidenteId,
-    type: (tipoMap[inc.tipo] || 'other') as 'medical' | 'security' | 'infrastructure' | 'other',
+    type: (areaMap[inc.area] || 'other') as 'medical' | 'security' | 'infrastructure' | 'other',
+    area: inc.area || 'general',
     title: inc.tipo.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
     description: inc.descripcion,
     location: inc.ubicacion,
-    status: (estadoMap[inc.estado] || 'pending') as 'pending' | 'in_progress' | 'resolved',
+    status: (estadoMap[inc.estado] || 'pending') as 'pending' | 'in_progress' | 'resolved' | 'cancelled',
     urgency: urgenciaMap[inc.urgencia] || 'medium',
     timestamp: new Date(inc.fechaCreacion).toLocaleString('es-ES'),
     email: inc.emailReportante || '',
@@ -173,16 +181,8 @@ export function mapFormToBackend(data: {
   urgency: string;
   email: string;
 }) {
-  // Mapear tipo inverso
-  const tipoMap: Record<string, string> = {
-    'medical': 'emergencia_medica',
-    'security': 'seguridad',
-    'infrastructure': 'infraestructura',
-    'other': 'otro'
-  };
-
   return {
-    tipo: tipoMap[data.type] || 'otro',
+    tipo: data.type, // Ahora enviamos el tipo directamente (robo, emergencia_medica, etc.)
     descripcion: data.description,
     ubicacion: data.location,
     urgencia: data.urgency,
@@ -197,7 +197,8 @@ export function mapStatusToBackend(status: string): string {
   const estadoMap: Record<string, string> = {
     'pending': 'pendiente',
     'in_progress': 'en_atencion',
-    'resolved': 'resuelto'
+    'resolved': 'resuelto',
+    'cancelled': 'cancelado'
   };
   return estadoMap[status] || 'pendiente';
 }

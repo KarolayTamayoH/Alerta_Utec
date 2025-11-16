@@ -4,6 +4,29 @@ import { AlertCircle, MapPin, FileText, Zap, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { crearIncidente, mapFormToBackend } from '../api/incidentsApi';
 
+// Mapeo de tipos de incidente a áreas responsables
+const INCIDENT_TYPE_TO_AREA: Record<string, string> = {
+  'robo': 'seguridad',
+  'acoso': 'seguridad',
+  'pelea': 'seguridad',
+  'acceso_no_autorizado': 'seguridad',
+  'emergencia_medica': 'enfermeria',
+  'accidente': 'enfermeria',
+  'malestar': 'enfermeria',
+  'fuga_agua': 'infraestructura',
+  'daño_estructural': 'infraestructura',
+  'inundacion': 'infraestructura',
+  'baño_sucio': 'limpieza',
+  'basura_acumulada': 'limpieza',
+  'derrame': 'limpieza',
+  'internet_caido': 'tecnologia',
+  'equipo_dañado': 'tecnologia',
+  'sistema_caido': 'tecnologia',
+  'luz_fundida': 'mantenimiento',
+  'aire_acondicionado': 'mantenimiento',
+  'puerta_dañada': 'mantenimiento'
+};
+
 export default function IncidentForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -51,7 +74,15 @@ export default function IncidentForm() {
       setMessage(null);
 
       const dataParaBackend = mapFormToBackend(formData);
-      const response = await crearIncidente(dataParaBackend);
+      
+      // Agregar el área asignada basada en el tipo de incidente
+      const area = INCIDENT_TYPE_TO_AREA[formData.type];
+      const dataConArea = {
+        ...dataParaBackend,
+        area: area || 'general'
+      };
+      
+      const response = await crearIncidente(dataConArea);
 
       if (response.incidenteId) {
         setMessage({ type: 'success', text: '✅ Incidente reportado exitosamente' });
@@ -106,10 +137,43 @@ export default function IncidentForm() {
             disabled={loading}
           >
             <option value="">Selecciona un tipo</option>
-            <option value="medical">🏥 Emergencia Médica</option>
-            <option value="fire">🔥 Incendio</option>
-            <option value="security">🔒 Seguridad</option>
-            <option value="infrastructure">🏗️ Infraestructura</option>
+            
+            <optgroup label="🔒 Seguridad">
+              <option value="robo">Robo o hurto</option>
+              <option value="acoso">Acoso o intimidación</option>
+              <option value="pelea">Pelea o altercado</option>
+              <option value="acceso_no_autorizado">Acceso no autorizado</option>
+            </optgroup>
+            
+            <optgroup label="🏥 Salud">
+              <option value="emergencia_medica">Emergencia médica</option>
+              <option value="accidente">Accidente</option>
+              <option value="malestar">Malestar o desmayo</option>
+            </optgroup>
+            
+            <optgroup label="🏗️ Infraestructura">
+              <option value="fuga_agua">Fuga de agua</option>
+              <option value="daño_estructural">Daño estructural</option>
+              <option value="inundacion">Inundación</option>
+            </optgroup>
+            
+            <optgroup label="🧹 Limpieza">
+              <option value="baño_sucio">Baño en mal estado</option>
+              <option value="basura_acumulada">Basura acumulada</option>
+              <option value="derrame">Derrame o suciedad</option>
+            </optgroup>
+            
+            <optgroup label="💻 Tecnología">
+              <option value="internet_caido">Internet caído</option>
+              <option value="equipo_dañado">Equipo dañado</option>
+              <option value="sistema_caido">Sistema caído</option>
+            </optgroup>
+            
+            <optgroup label="🔧 Mantenimiento">
+              <option value="luz_fundida">Luz fundida</option>
+              <option value="aire_acondicionado">Aire acondicionado</option>
+              <option value="puerta_dañada">Puerta dañada</option>
+            </optgroup>
           </select>
         </div>
 

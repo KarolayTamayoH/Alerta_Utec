@@ -40,7 +40,7 @@ export default function Home() {
                       </span>
                     )}
                   </span>
-                  {(rol === "administrativo" || rol === "seguridad" || rol === "autoridad") && (
+                  {rol === "administrativo" && (
                     <Link
                       to="/admin"
                       className="hidden sm:flex items-center gap-2 no-underline bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-xl transition-colors text-sm"

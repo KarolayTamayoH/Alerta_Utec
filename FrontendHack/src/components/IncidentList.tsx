@@ -10,7 +10,7 @@ export default function IncidentList() {
   const navigate = useNavigate();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved' | 'cancelled'>('all');
   const rol = localStorage.getItem('rol');
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function IncidentList() {
       setIncidents(prev =>
         prev.map(inc =>
           inc.id === id
-            ? { ...inc, status: newStatus as 'pending' | 'in_progress' | 'resolved' }
+            ? { ...inc, status: newStatus as 'pending' | 'in_progress' | 'resolved' | 'cancelled' }
             : inc
         )
       );
@@ -115,6 +115,16 @@ export default function IncidentList() {
           onClick={() => setFilter('resolved')}
         >
           Resueltos ({incidents.filter((i) => i.status === 'resolved').length})
+        </button>
+        <button
+          className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+            filter === 'cancelled'
+              ? 'bg-gray-500 text-white shadow-lg shadow-gray-500/30'
+              : 'bg-white text-slate-700 hover:bg-gray-50 border border-slate-200'
+          }`}
+          onClick={() => setFilter('cancelled')}
+        >
+          Cancelados ({incidents.filter((i) => i.status === 'cancelled').length})
         </button>
       </div>
 

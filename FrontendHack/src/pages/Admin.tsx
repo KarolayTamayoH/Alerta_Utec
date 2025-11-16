@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Home, LogOut, RefreshCw, Bell, Activity, Clock, Wrench, CheckCircle2 } from "lucide-react";
+import { Home, LogOut, RefreshCw, Bell, Activity, Clock, Wrench, CheckCircle2, XCircle } from "lucide-react";
 import { listarIncidentes, actualizarEstado, mapIncidenteToFrontend } from "../api/incidentsApi";
 import { connectWebSocket, disconnectWebSocket } from "../sockets/websocket";
 import IncidentCard from "../components/IncidentCard";
@@ -12,6 +12,7 @@ interface Stats {
   pendientes: number;
   enAtencion: number;
   resueltos: number;
+  cancelados: number;
 }
 
 export default function Admin() {
@@ -24,7 +25,8 @@ export default function Admin() {
     total: 0,
     pendientes: 0,
     enAtencion: 0,
-    resueltos: 0
+    resueltos: 0,
+    cancelados: 0
   });
 
   const mostrarNotificacion = (texto: string) => {
@@ -46,33 +48,24 @@ export default function Admin() {
     }
   }, []);
 
-  // Mapeo de áreas de usuario a tipos de incidente
-  const mapAreaToIncidentType = (area: string): string[] => {
-    const mapping: Record<string, string[]> = {
-      'seguridad': ['security'],
-      'enfermeria': ['medical'],
-      'infraestructura': ['infrastructure'],
-      'limpieza': ['infrastructure'],
-      'tecnologia': ['infrastructure', 'other'],
-      'mantenimiento': ['infrastructure']
-    };
-    return mapping[area] || [];
-  };
-
   // Filtrar incidentes según el área del usuario
   const getIncidentesFiltrados = useCallback(() => {
     const rol = localStorage.getItem("rol");
     const area = localStorage.getItem("area");
 
-    // Administradores y seguridad ven todo
-    if (rol === "administrador" || rol === "seguridad") {
+    // Administrativos ven todo
+    if (rol === "administrativo") {
       return incidentes;
     }
 
     // Autoridades pueden filtrar por su área
-    if (rol === "autoridad" && area && filtroArea === 'mi_area') {
-      const tiposRelacionados = mapAreaToIncidentType(area);
-      return incidentes.filter(inc => tiposRelacionados.includes(inc.type));
+    if (rol === "autoridad" && area) {
+      if (filtroArea === 'mi_area') {
+        // Filtrar por area exacta (seguridad, enfermeria, etc.)
+        return incidentes.filter(inc => inc.area.toLowerCase() === area.toLowerCase());
+      }
+      // Mostrar todos si selecciona "todos"
+      return incidentes;
     }
 
     return incidentes;
@@ -85,7 +78,8 @@ export default function Admin() {
       total: incidentesFiltrados.length,
       pendientes: incidentesFiltrados.filter(i => i.status === "pending").length,
       enAtencion: incidentesFiltrados.filter(i => i.status === "in_progress").length,
-      resueltos: incidentesFiltrados.filter(i => i.status === "resolved").length
+      resueltos: incidentesFiltrados.filter(i => i.status === "resolved").length,
+      cancelados: incidentesFiltrados.filter(i => i.status === "cancelled").length
     });
   }, [incidentesFiltrados]);
 
@@ -96,7 +90,7 @@ export default function Admin() {
   useEffect(() => {
     // Verificar autenticación y rol
     const rol = localStorage.getItem("rol");
-    if (rol !== "administrativo" && rol !== "seguridad" && rol !== "autoridad") {
+    if (rol !== "administrativo") {
       alert("❌ No tienes permisos para acceder a esta página");
       navigate("/");
       return;
@@ -135,7 +129,7 @@ export default function Admin() {
       setIncidentes(prev =>
         prev.map(inc =>
           inc.id === id
-            ? { ...inc, status: nuevoEstado as 'pending' | 'in_progress' | 'resolved' }
+            ? { ...inc, status: nuevoEstado as 'pending' | 'in_progress' | 'resolved' | 'cancelled' }
             : inc
         )
       );
@@ -200,7 +194,7 @@ export default function Admin() {
       </header>
 
       <main className="max-w-7xl mx-auto px-5 py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -248,6 +242,18 @@ export default function Admin() {
               <h3 className="text-4xl font-bold text-gray-800">{stats.resueltos}</h3>
             </div>
             <p className="text-sm font-semibold text-gray-600">✅ Resueltos</p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white p-6 rounded-2xl border-l-4 border-gray-500 shadow-lg hover:shadow-xl transition-all"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <XCircle className="w-8 h-8 text-gray-500" />
+              <h3 className="text-4xl font-bold text-gray-800">{stats.cancelados}</h3>
+            </div>
+            <p className="text-sm font-semibold text-gray-600">❌ Cancelados</p>
           </motion.div>
         </div>
 

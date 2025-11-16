@@ -55,9 +55,9 @@ function App() {
           </ProtectedRoute>
         } />
 
-        {/* Panel de administración - solo para autoridades, seguridad y administrativos */}
+        {/* Panel de administración - solo para administrativos */}
         <Route path="/admin" element={
-          <ProtectedRoute requireRoles={["autoridad", "seguridad", "administrativo"]}>
+          <ProtectedRoute requireRoles={["administrativo"]}>
             <Admin />
           </ProtectedRoute>
         } />

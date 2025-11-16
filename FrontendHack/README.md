@@ -18,7 +18,7 @@ Sistema web de gestión de incidentes para el campus universitario UTEC, que per
 - 🔐 **Sistema de autenticación** con roles diferenciados
 - 📝 **Reporte de incidentes** con categorización y niveles de urgencia
 - 🔄 **Actualización en tiempo real** del estado de incidentes
-- 👥 **Control de acceso basado en roles** (Estudiante, Administrativo, Seguridad, Administrador)
+- 👥 **Control de acceso basado en roles** (Estudiante, Autoridad, Administrativo)
 - 📊 **Panel administrativo** con estadísticas y gestión avanzada
 - 🔔 **Notificaciones por email** (SNS) para cambios de estado
 - 📱 **Diseño responsive** adaptado a móviles y tablets
@@ -78,8 +78,8 @@ http://localhost:5178
    - **Contraseña**: Mínimo 6 caracteres
    - **Rol**: Seleccionar según corresponda
      - `Estudiante`: Para alumnos
+     - `Autoridad/Personal`: Para personal de áreas específicas (seguridad, enfermería, infraestructura, etc.)
      - `Administrativo`: Para personal administrativo
-     - `Seguridad`: Para personal de seguridad
 4. Hacer clic en **"Registrarse"**
 5. El sistema creará la cuenta y redirigirá automáticamente al inicio
 
@@ -149,9 +149,9 @@ Todos los usuarios pueden visualizar los incidentes reportados.
 
 ---
 
-### 4. Gestionar Estados (Solo Administradores y Seguridad)
+### 4. Gestionar Estados (Solo Autoridades y Administrativos)
 
-**Nota:** Esta funcionalidad solo está disponible para usuarios con rol **Administrador** o **Seguridad**.
+**Nota:** Esta funcionalidad solo está disponible para usuarios con rol **Autoridad** o **Administrativo**.
 
 **Estados disponibles:**
 - ⏱ **Pendiente**: Incidente reportado, esperando atención
@@ -166,13 +166,13 @@ Todos los usuarios pueden visualizar los incidentes reportados.
    - En Atención → Resuelto
    - Resuelto → Pendiente (para reabrir)
 
-4. Se enviará una notificación por email a los usuarios suscritos (Administradores y Seguridad)
+4. Se enviará una notificación por email a los usuarios suscritos (Autoridades y Administrativos)
 
 ---
 
 ### 5. Panel Administrativo
 
-**Acceso:** Solo para roles **Administrador** y **Seguridad**
+**Acceso:** Solo para roles **Autoridad** y **Administrativo**
 
 **Para acceder:**
 1. Hacer clic en el botón **"Panel Admin"** en el header (esquina superior derecha)
@@ -229,16 +229,16 @@ Todos los usuarios pueden visualizar los incidentes reportados.
 
 ---
 
-### 🛡️ Seguridad
+### 🛡️ Autoridad (Área de Seguridad)
 **Permisos:**
-- ✅ Ver todos los incidentes
+- ✅ Ver todos los incidentes (acceso completo)
 - ✅ Reportar nuevos incidentes
 - ✅ **Cambiar estados de incidentes**
 - ✅ **Acceso al panel administrativo**
 - ✅ Recibe notificaciones por email (SNS)
 
 **Casos de uso:**
-- Gestionar incidentes de seguridad
+- Gestionar incidentes de todas las áreas
 - Actualizar estados conforme se atienden
 - Monitorear situaciones en tiempo real
 - Coordinar respuestas a emergencias
@@ -265,7 +265,7 @@ Todos los usuarios pueden visualizar los incidentes reportados.
 ## 🔔 Notificaciones
 
 ### Notificaciones por Email (SNS)
-Los usuarios con rol **Administrador** y **Seguridad** son automáticamente suscritos al sistema de notificaciones por email cuando se registran.
+Los usuarios con rol **Autoridad** y **Administrativo** son automáticamente suscritos al sistema de notificaciones por email cuando se registran.
 
 **Recibirás emails cuando:**
 - Un incidente cambia de estado
@@ -316,13 +316,13 @@ Los usuarios con rol **Administrador** y **Seguridad** son automáticamente susc
 - Revisar que el backend esté funcionando
 
 ### No veo el botón "Cambiar Estado"
-- Verificar que tu rol sea **Administrador** o **Seguridad**
+- Verificar que tu rol sea **Autoridad** o **Administrativo**
 - Los roles **Estudiante** y **Administrativo** no tienen este permiso
 
 ### No recibo notificaciones por email
 - Verificar que confirmaste la suscripción a SNS
 - Revisar la carpeta de spam/correo no deseado
-- Solo usuarios **Administrador** y **Seguridad** reciben notificaciones
+- Solo usuarios **Autoridad** y **Administrativo** reciben notificaciones
 
 ### La página no carga los incidentes
 - Verificar la conexión a internet

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MapPin, Clock, AlertCircle, HeartPulse, Shield, Wrench, ChevronRight, Loader2, User } from 'lucide-react';
 import { Incident } from '../types';
+import ConfirmCancelModal from './ConfirmCancelModal';
 
 interface IncidentCardProps {
   incident: Incident;
@@ -9,11 +10,16 @@ interface IncidentCardProps {
 
 export default function IncidentCard({ incident, onStatusChange }: IncidentCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   // Obtener rol del usuario desde localStorage
   const userRole = localStorage.getItem('rol');
-  // Solo autoridades, seguridad y administrativos pueden cambiar estados
-  const canChangeStatus = userRole === 'administrativo' || userRole === 'seguridad' || userRole === 'autoridad';
+  
+  // Todos los usuarios pueden cancelar los incidentes que ven
+  const canCancel = incident.status !== 'cancelled' && incident.status !== 'resolved';
+  
+  // Solo autoridades y administrativos pueden cambiar estados (pendiente -> en atención -> resuelto)
+  const canChangeStatus = userRole === 'administrativo' || userRole === 'autoridad';
 
   const getTypeIcon = () => {
     switch (incident.type) {
@@ -79,6 +85,12 @@ export default function IncidentCard({ incident, onStatusChange }: IncidentCardP
         gradient: 'from-green-600 to-emerald-600',
         icon: '✓',
         nextStatus: 'pending' as const
+      },
+      cancelled: {
+        label: 'Cancelado',
+        gradient: 'from-gray-500 to-slate-600',
+        icon: '✕',
+        nextStatus: 'pending' as const
       }
     };
     return configs[incident.status];
@@ -93,6 +105,17 @@ export default function IncidentCard({ incident, onStatusChange }: IncidentCardP
       await onStatusChange(incident.id, status.nextStatus);
     } catch (error) {
       console.error('Error al cambiar estado:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    setIsUpdating(true);
+    try {
+      await onStatusChange(incident.id, 'cancelled');
+    } catch (error) {
+      console.error('Error al cancelar incidente:', error);
     } finally {
       setIsUpdating(false);
     }
@@ -147,28 +170,55 @@ export default function IncidentCard({ incident, onStatusChange }: IncidentCardP
             <span className={`gradient-badge bg-gradient-to-r ${status.gradient}`}>
               {status.icon} {status.label}
             </span>
-            {canChangeStatus && (
-              <button
-                onClick={handleStatusChange}
-                disabled={isUpdating}
-                className={`flex items-center gap-2 bg-gradient-to-r ${status.gradient} hover:shadow-lg text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-300 shadow-md text-sm group/btn disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {isUpdating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Actualizando...
-                  </>
-                ) : (
-                  <>
-                    Cambiar
-                    <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {canChangeStatus && incident.status !== 'cancelled' && (
+                <button
+                  onClick={handleStatusChange}
+                  disabled={isUpdating}
+                  className={`flex items-center gap-2 bg-gradient-to-r ${status.gradient} hover:shadow-lg text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-300 shadow-md text-sm group/btn disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {isUpdating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Actualizando...
+                    </>
+                  ) : (
+                    <>
+                      Cambiar
+                      <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </button>
+              )}
+              {canCancel && (
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  disabled={isUpdating}
+                  className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:shadow-lg text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-300 shadow-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isUpdating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Cancelando...
+                    </>
+                  ) : (
+                    <>
+                      ✕ Cancelar Incidente
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      <ConfirmCancelModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleCancel}
+        incidentTitle={incident.title}
+      />
     </div>
   );
 }

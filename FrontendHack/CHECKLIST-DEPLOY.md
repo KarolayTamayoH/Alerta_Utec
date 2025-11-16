@@ -39,10 +39,10 @@ VITE_WS_URL=wss://YOUR_WEBSOCKET_ID.execute-api.us-east-1.amazonaws.com/dev
 
 ### ✅ 5. Funcionalidades Implementadas
 - [x] Sistema de autenticación (Login/Register)
-- [x] Roles: estudiante, administrativo, seguridad, administrador
+- [x] Roles: estudiante, autoridad (con áreas: seguridad, enfermería, infraestructura, limpieza, tecnología, mantenimiento), administrativo
 - [x] Reportar incidentes con 4 niveles de urgencia
 - [x] Ver lista de incidentes con filtros
-- [x] Cambiar estado de incidentes (solo admin/seguridad)
+- [x] Cambiar estado de incidentes (solo autoridad/administrativo)
 - [x] Panel administrativo con estadísticas
 - [x] WebSocket para actualizaciones en tiempo real (opcional)
 - [x] Notificaciones SNS por email
@@ -133,7 +133,7 @@ Si no tienes WebSocket configurado, la aplicación funcionará igual. El WebSock
 Sin WebSocket, los usuarios deben hacer clic en "Actualizar" para ver nuevos incidentes.
 
 ### Notificaciones SNS
-Las notificaciones por email funcionan independientemente del WebSocket. Los usuarios con rol admin/seguridad recibirán emails cuando:
+Las notificaciones por email funcionan independientemente del WebSocket. Los usuarios con rol autoridad/administrativo recibirán emails cuando:
 - Se reporte un nuevo incidente (opcional, según configuración backend)
 - Se cambie el estado de un incidente
 
@@ -168,7 +168,7 @@ Funcionalidades disponibles:
 - ✅ Reportar incidentes de seguridad, médicos, infraestructura
 - ✅ Ver lista de incidentes en tiempo real
 - ✅ Filtrar incidentes por estado
-- ✅ Cambiar estado (solo admin/seguridad)
+- ✅ Cambiar estado (solo autoridad/administrativo)
 - ✅ Panel administrativo con estadísticas
 - ✅ Notificaciones por email (SNS)
 - ✅ Diseño responsive (móvil, tablet, desktop)
