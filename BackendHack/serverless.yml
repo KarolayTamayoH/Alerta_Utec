@@ -1,0 +1,191 @@
+service: alerta-utec-backend
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: dev
+  iam:
+    role: arn:aws:iam::429096294781:role/LabRole
+  environment:
+    SNS_TOPIC_ARN: { Ref: IncidentesSNSTopic }
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+
+functions:
+
+  # AUTH
+  register:
+    handler: src/auth/register.handler
+    events:
+      - http:
+          path: auth/register
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+
+  login:
+    handler: src/auth/login.handler
+    events:
+      - http:
+          path: auth/login
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+
+  # INCIDENTES
+  crearIncidente:
+    handler: src/incidentes/crearIncidente.handler
+    events:
+      - http:
+          path: incidentes
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+
+  listarIncidentes:
+    handler: src/incidentes/listarIncidentes.handler
+    events:
+      - http:
+          path: incidentes
+          method: get
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+
+  obtenerIncidente:
+    handler: src/incidentes/obtenerIncidente.handler
+    events:
+      - http:
+          path: incidentes/{id}
+          method: get
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+
+  actualizarEstado:
+    handler: src/incidentes/actualizarEstado.handler
+    events:
+      - http:
+          path: incidentes/{id}/estado
+          method: patch
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+
+  # WEBSOCKETS
+  wsConnect:
+    handler: src/websocket/connect.handler
+    events:
+      - websocket:
+          route: $connect
+
+  wsDisconnect:
+    handler: src/websocket/disconnect.handler
+    events:
+      - websocket:
+          route: $disconnect
+
+  wsNotify:
+    handler: src/websocket/notify.handler
+    events:
+      - websocket:
+          route: notify
+
+resources:
+  Resources:
+
+    UsuariosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Usuarios
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    IncidentesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Incidentes
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: incidenteId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: incidenteId
+            KeyType: HASH
+
+    WebSocketConnections:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: WebSocketConnections
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: connectionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+
+    IncidentesSNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: IncidentesNotificaciones
+        DisplayName: Notificaciones de Incidentes UTEC
+
+    # Suscripción de email al topic SNS
+    # Cambia el email por el tuyo verificado
+    SecurityEmailSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: email
+        TopicArn: { Ref: IncidentesSNSTopic }
+        Endpoint: seguridad@utec.edu.pe  # ⚠️ CAMBIAR POR TU EMAIL
